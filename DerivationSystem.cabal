@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 2e40bfaefd35de33ebfa38d96b3e6b6ae9650eed3f63cc88cf334566c28708a5
+-- hash: e860b4ee8345f565fca195e6b449e3946d1036cb1857fa984c222d6498a94f2b
 
 name:           DerivationSystem
 version:        0.1.0.0
@@ -28,6 +28,7 @@ source-repository head
 library
   exposed-modules:
       Lib
+      Nat
   other-modules:
       Paths_DerivationSystem
   hs-source-dirs:
