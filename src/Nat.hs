@@ -29,17 +29,20 @@ instance Show Rule where
     show TZERO         = "By T-ZERO"
     show (TSUCC j1 j2) = "By T-SUCC, with judgements " ++ show j1 ++ " and " ++ show j2
 
-derivation                    :: Judgement -> IO (Judgement, [(Rule, Judgement)])
-derivation j@(Plus  n1 n2 n3) =  do print j
-                                    putStrLn (replicate ((length . show) j) '-')
-                                    forM_ (snd res) $ \i -> do
-                                        print i
-                                    return res
-                                    where res = pDerivation j
+isPlus              :: Judgement -> Bool
+isPlus Plus {} =  True
+isPlus _       =  False
 
-derivation j@(Times n1 n2 n3) =  do print j
-                                    putStrLn (replicate ((length . show) j) '-')
-                                    tDerivation j
+printDerivation   :: Judgement -> IO (Judgement, [(Rule, Judgement)])
+printDerivation j =  do print j
+                        putStrLn (replicate ((length . show) j) '-')
+                        forM_ (snd res) $ \i -> print i
+                        return res
+                        where res = derivation j
+
+derivation                    :: Judgement -> (Judgement, [(Rule, Judgement)])
+derivation j | isPlus j  = pDerivation j
+             | otherwise = tDerivation j
 
 pDerivation                   :: Judgement -> (Judgement, [(Rule, Judgement)])
 pDerivation j@(Plus n1 n2 n3) =  (j, pSuccEval n1 (pZero n2))
@@ -49,14 +52,11 @@ pSuccEval    a jr@(_, j@(Plus n1 _ _))
              | a < n1   = []
              | otherwise = jr : pSuccEval a (pSucc j)
 
-tDerivation                    :: Judgement -> IO (Judgement, [(Rule, Judgement)])
-tDerivation j@(Times n1 n2 n3) =  do putStrLn "By T-Zero"
-                                     res <- tSuccEval n1 tz
-                                     return (j, [(TZERO, j)])
-                                     where tz = tZero n2
+tDerivation                    :: Judgement -> (Judgement, [(Rule, Judgement)])
+tDerivation j@(Times n1 n2 n3) =  (j, []) -- (j, tSuccEval n1 (tZero n2))
 
-tSuccEval :: Int -> Judgement -> IO Judgement
-tSuccEval = undefined
+tSuccEval :: Int -> (Rule, Judgement) -> [(Rule, Judgement)]
+tSuccEval =  undefined
 
 
 pZero   :: Int -> (Rule, Judgement)
