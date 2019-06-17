@@ -1,6 +1,7 @@
 module Nat where
 
 import Control.Monad
+import Data.Maybe
 
 data Judgement = Plus  Int Int Int
                | Times Int Int Int
@@ -48,15 +49,15 @@ pDerivation                   :: Judgement -> (Judgement, [(Rule, Judgement)])
 pDerivation j@(Plus n1 n2 n3) =  (j, pSuccEval n1 (pZero n2))
 
 pSuccEval :: Int -> (Rule, Judgement) -> [(Rule, Judgement)]
-pSuccEval    a jr@(_, j@(Plus n1 _ _))
-             | a < n1   = []
-             | otherwise = jr : pSuccEval a (pSucc j)
+pSuccEval    a jr@(_, j@(Plus n1 _ _)) | a < n1   = []
+                                       | otherwise = jr : pSuccEval a (pSucc j)
 
 tDerivation                    :: Judgement -> (Judgement, [(Rule, Judgement)])
-tDerivation j@(Times n1 n2 n3) =  (j, []) -- (j, tSuccEval n1 (tZero n2))
+tDerivation j@(Times n1 n2 n3) =  (j, tSuccEval n1 (tZero n2))
 
 tSuccEval :: Int -> (Rule, Judgement) -> [(Rule, Judgement)]
-tSuccEval =  undefined
+tSuccEval    a jr@(_, j@(Times n1 _ _)) | a < n1   = []
+                                        | otherwise = jr : tSuccEval a (fromJust (tSucc j (pDerivation foobar)))
 
 
 pZero   :: Int -> (Rule, Judgement)
@@ -65,8 +66,8 @@ pZero n =  (PZERO, Plus 0 n n)
 pSucc                 :: Judgement -> (Rule, Judgement)
 pSucc j@(Plus n1 n2 n3) =  (PSUCC j, Plus (succ n1) n2 (succ n3))
 
-tZero   :: Int -> Judgement
-tZero n =  Times 0 n 0
+tZero   :: Int -> (Rule, Judgement)
+tZero n =  (TZERO, Times 0 n 0)
 
 tSucc   :: Judgement -> Judgement -> Maybe Judgement
 tSucc (Times n1 n2 n3) (Plus n4 n5 n6) = if n2 == n4 && 
