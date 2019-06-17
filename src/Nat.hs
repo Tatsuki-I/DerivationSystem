@@ -29,42 +29,41 @@ instance Show Rule where
     show TZERO         = "By T-ZERO"
     show (TSUCC j1 j2) = "By T-SUCC, with judgements " ++ show j1 ++ " and " ++ show j2
 
-derivation                    :: Judgement -> IO (Judgement, [(Judgement, Rule)])
+derivation                    :: Judgement -> IO (Judgement, [(Rule, Judgement)])
 derivation j@(Plus  n1 n2 n3) =  do print j
                                     putStrLn (replicate ((length . show) j) '-')
-                                    pDerivation j
+                                    forM_ (snd res) $ \i -> do
+                                        print i
+                                    return res
+                                    where res = pDerivation j
 
 derivation j@(Times n1 n2 n3) =  do print j
-                                    putStrLn "----------"
+                                    putStrLn (replicate ((length . show) j) '-')
                                     tDerivation j
 
-pDerivation                   :: Judgement -> IO (Judgement, [(Judgement, Rule)])
-pDerivation j@(Plus n1 n2 n3) =  do forM_ (res) $ \i -> do
-                                          print i
-                                    return (j, res)
-                                    where pz = pZero n2
-                                          res =pSuccEval n1 pz
+pDerivation                   :: Judgement -> (Judgement, [(Rule, Judgement)])
+pDerivation j@(Plus n1 n2 n3) =  (j, pSuccEval n1 (pZero n2))
 
-pSuccEval :: Int -> (Judgement, Rule) -> [(Judgement, Rule)]
-pSuccEval    a jr@(j@(Plus n1 _ _), _)
+pSuccEval :: Int -> (Rule, Judgement) -> [(Rule, Judgement)]
+pSuccEval    a jr@(_, j@(Plus n1 _ _))
              | a < n1   = []
              | otherwise = jr : pSuccEval a (pSucc j)
 
-tDerivation                    :: Judgement -> IO (Judgement, [(Judgement, Rule)])
+tDerivation                    :: Judgement -> IO (Judgement, [(Rule, Judgement)])
 tDerivation j@(Times n1 n2 n3) =  do putStrLn "By T-Zero"
                                      res <- tSuccEval n1 tz
-                                     return (j, [(j, TZERO)])
+                                     return (j, [(TZERO, j)])
                                      where tz = tZero n2
 
 tSuccEval :: Int -> Judgement -> IO Judgement
 tSuccEval = undefined
 
 
-pZero   :: Int -> (Judgement, Rule)
-pZero n =  (Plus 0 n n, PZERO)
+pZero   :: Int -> (Rule, Judgement)
+pZero n =  (PZERO, Plus 0 n n)
 
-pSucc                 :: Judgement -> (Judgement, Rule)
-pSucc j@(Plus n1 n2 n3) =  (Plus (succ n1) n2 (succ n3), PSUCC j)
+pSucc                 :: Judgement -> (Rule, Judgement)
+pSucc j@(Plus n1 n2 n3) =  (PSUCC j, Plus (succ n1) n2 (succ n3))
 
 tZero   :: Int -> Judgement
 tZero n =  Times 0 n 0
