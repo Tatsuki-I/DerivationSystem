@@ -60,7 +60,7 @@ tSuccEval :: Int -> (Rule, Judgement) -> (Rule, Judgement) -> [(Rule, Judgement)
 tSuccEval    a tz@(_, j@(Times n1 _ _)) (_, p) | a <= n1   = [tz]
                                                | otherwise = [tz] ++  pjr ++ tSuccEval a nt (NONE, Plus ntn2 ntn3 (ntn2 + ntn3))
                                                  where ps@(pj, pjr) = pDerivation p
-                                                       nt@(_, (Times ntn1 ntn2 ntn3)) = fromJust (tSucc j pj)
+                                                       nt@(_, Times ntn1 ntn2 ntn3) = fromJust (tSucc j pj)
 
 pZero   :: Int -> (Rule, Judgement)
 pZero n =  (PZERO, Plus 0 n n)
