@@ -30,7 +30,7 @@ instance Show Rule where
     show TZERO         = "By T-ZERO"
     show (TSUCC j1 j2) = "By T-SUCC, with judgements " ++ show j1 ++ " and " ++ show j2
 
-isPlus              :: Judgement -> Bool
+isPlus         :: Judgement -> Bool
 isPlus Plus {} =  True
 isPlus _       =  False
 
@@ -48,9 +48,9 @@ derivation j | isPlus j  = pDerivation j
 pDerivation                   :: Judgement -> (Judgement, [(Rule, Judgement)])
 pDerivation j@(Plus n1 n2 n3) =  (j, pSuccEval n1 (pZero n2))
 
-pSuccEval :: Int -> (Rule, Judgement) -> [(Rule, Judgement)]
-pSuccEval    a jr@(_, j@(Plus n1 _ _)) | a < n1   = []
-                                       | otherwise = jr : pSuccEval a (pSucc j)
+pSuccEval                              :: Int -> (Rule, Judgement) -> [(Rule, Judgement)]
+pSuccEval    a jr@(_, j@(Plus n1 _ _)) |  a < n1   = []
+                                       |  otherwise = jr : pSuccEval a (pSucc j)
 
 tDerivation                    :: Judgement -> (Judgement, [(Rule, Judgement)])
 tDerivation j@(Times n1 n2 n3) =  (j, tSuccEval n1 (tZero n2))
@@ -63,13 +63,13 @@ tSuccEval    a jr@(_, j@(Times n1 _ _)) | a < n1   = []
 pZero   :: Int -> (Rule, Judgement)
 pZero n =  (PZERO, Plus 0 n n)
 
-pSucc                 :: Judgement -> (Rule, Judgement)
+pSucc                   :: Judgement -> (Rule, Judgement)
 pSucc j@(Plus n1 n2 n3) =  (PSUCC j, Plus (succ n1) n2 (succ n3))
 
 tZero   :: Int -> (Rule, Judgement)
 tZero n =  (TZERO, Times 0 n 0)
 
-tSucc   :: Judgement -> Judgement -> Maybe Judgement
+tSucc                                  :: Judgement -> Judgement -> Maybe Judgement
 tSucc (Times n1 n2 n3) (Plus n4 n5 n6) = if n2 == n4 && 
                                             n3 == n5
                                             then Just (Times (succ n1) n2 n6)
