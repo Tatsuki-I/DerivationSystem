@@ -23,6 +23,7 @@ data Rule = PZERO
           | PSUCC Judgement
           | TZERO
           | TSUCC Judgement Judgement
+          | NONE
 
 instance Show Rule where
     show PZERO         = "By P-ZERO."
@@ -53,13 +54,11 @@ pSuccEval    a jr@(_, j@(Plus n1 _ _)) |  a < n1   = []
                                        |  otherwise = jr : pSuccEval a (pSucc j)
 
 tDerivation                    :: Judgement -> (Judgement, [(Rule, Judgement)])
---tDerivation j@(Times n1 n2 n3) =  (j, tSuccEval n1 (tZero n2) (PZERO, Plus n2 n3 (n2 + n3)))
-tDerivation j@(Times n1 n2 n3) =  (j, tSuccEval n1 (tZero n2) (PZERO, Plus 3 0 3))
---tDerivation j@(Times n1 n2 n3) =  (j, tSuccEval n1 (tZero n2) (pZero n2))
+tDerivation j@(Times n1 n2 n3) =  (j, tSuccEval n1 (tZero n2) (NONE, Plus n2 0 n2))
 
 tSuccEval :: Int -> (Rule, Judgement) -> (Rule, Judgement) -> [(Rule, Judgement)]
 tSuccEval    a tz@(_, j@(Times n1 _ _)) (_, p) | a <= n1   = [tz]
-                                               | otherwise = [tz] ++  pjr ++ tSuccEval a nt (PZERO, Plus ntn2 ntn3 (ntn2 + ntn3))
+                                               | otherwise = [tz] ++  pjr ++ tSuccEval a nt (NONE, Plus ntn2 ntn3 (ntn2 + ntn3))
                                                  where ps@(pj, pjr) = pDerivation p
                                                        nt@(_, (Times ntn1 ntn2 ntn3)) = fromJust (tSucc j pj)
 
