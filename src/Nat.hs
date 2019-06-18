@@ -53,12 +53,15 @@ pSuccEval    a jr@(_, j@(Plus n1 _ _)) |  a < n1   = []
                                        |  otherwise = jr : pSuccEval a (pSucc j)
 
 tDerivation                    :: Judgement -> (Judgement, [(Rule, Judgement)])
-tDerivation j@(Times n1 n2 n3) =  (j, tSuccEval n1 (tZero n2))
+--tDerivation j@(Times n1 n2 n3) =  (j, tSuccEval n1 (tZero n2) (PZERO, Plus n2 n3 (n2 + n3)))
+tDerivation j@(Times n1 n2 n3) =  (j, tSuccEval n1 (tZero n2) (PZERO, Plus 3 0 3))
+--tDerivation j@(Times n1 n2 n3) =  (j, tSuccEval n1 (tZero n2) (pZero n2))
 
-tSuccEval :: Int -> (Rule, Judgement) -> [(Rule, Judgement)]
-tSuccEval    a jr@(_, j@(Times n1 _ _)) | a < n1   = []
-                                        | otherwise = jr : tSuccEval a (fromJust (tSucc j (pDerivation foobar)))
-
+tSuccEval :: Int -> (Rule, Judgement) -> (Rule, Judgement) -> [(Rule, Judgement)]
+tSuccEval    a tz@(_, j@(Times n1 _ _)) (_, p) | a <= n1   = [tz]
+                                               | otherwise = [tz] ++  pjr ++ tSuccEval a nt (PZERO, Plus ntn2 ntn3 (ntn2 + ntn3))
+                                                 where ps@(pj, pjr) = pDerivation p
+                                                       nt@(_, (Times ntn1 ntn2 ntn3)) = fromJust (tSucc j pj)
 
 pZero   :: Int -> (Rule, Judgement)
 pZero n =  (PZERO, Plus 0 n n)
@@ -69,9 +72,9 @@ pSucc j@(Plus n1 n2 n3) =  (PSUCC j, Plus (succ n1) n2 (succ n3))
 tZero   :: Int -> (Rule, Judgement)
 tZero n =  (TZERO, Times 0 n 0)
 
-tSucc                                  :: Judgement -> Judgement -> Maybe Judgement
-tSucc (Times n1 n2 n3) (Plus n4 n5 n6) = if n2 == n4 && 
-                                            n3 == n5
-                                            then Just (Times (succ n1) n2 n6)
-                                            else Nothing
+tSucc                                  :: Judgement -> Judgement -> Maybe (Rule, Judgement)
+tSucc t@(Times n1 n2 n3) p@(Plus n4 n5 n6) = if n2 == n4 && 
+                                                n3 == n5
+                                                then Just (TSUCC t p, Times (succ n1) n2 n6)
+                                                else Nothing
 
